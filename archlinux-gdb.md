@@ -31,13 +31,14 @@ generally follow https://wiki.archlinux.org/title/Kernel/Traditional_compilation
 * G: copy out `/proc/config.gz`  (zcat to `<source>/.config`)
 * H: `make nconfig (or menuconfig)` and make necessary changes.  
   suggestions below:
-  * General setup -> Local version: `CONFIG_LOCALVERSION=-gdb`  
+  * General setup -> Local version: `CONFIG_LOCALVERSION=-gdb` (`./scripts/config --set-str LOCALVERSION '-gdb'`)  
     **(you should do this to avoid making a kernel with the same <uname -r>)**
   * Kernel hacking
     * Compile-time checks and compiler options
-      * Provide GDB scripts for kernel debugging: `CONFIG_GDB_SCRIPTS=y`
-      * Generate readable assembler code: `CONFIG_READABLE_ASM=y`
-* H/G: make sure to use `lsmod` or `modprobed-db` to reduce unnecessary compilation
+      * Provide GDB scripts for kernel debugging: `CONFIG_GDB_SCRIPTS=y` (`./scripts/config -e GDB_SCRIPTS`)  
+      * Generate readable assembler code: `CONFIG_READABLE_ASM=y` (`./scripts/config -e READABLE_ASM`)
+* H/G: make sure to use `lsmod` or `modprobed-db` to reduce unnecessary compilation  
+  (Alternatively `make mod2yesconfig` to make all modules built into vmlinux)
   * G: `lsmod` or `modprobed-db list > <source>/needed_mods`
   * H: `make LSMOD=needed_mods localmodconfig` or `make LSMOD=needed_mods localyesconfig`
 * H: `make` or `make -j<number of threads>`
