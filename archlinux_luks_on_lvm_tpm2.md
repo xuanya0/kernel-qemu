@@ -59,13 +59,12 @@ Run
 ```
 set -e
 
-TMP="/tmp/unsigned.efi"
 EFI_PATH="/EFI/Linux/ARCH_UKI.SIGNED.EFI"
 SIGNED="/boot/$EFI_PATH"
 LABEL='Arch UKI Signed'
 UKICONF="/etc/kernel/uki.conf"
-ukify build --measure -c "$UKICONF" -o "$TMP"
-sbctl sign -s "$TMP" -o "$SIGNED"
+ukify build --measure -c "$UKICONF" -o "$SIGNED"
+sbctl sign -s "$SIGNED"
 systemd-cryptenroll --wipe-slot tpm2 --tpm2-device auto --tpm2-pcrs="7" --tpm2-public-key-pcrs="11" /dev/mapper/arch-root
 set +e; efibootmgr -q -B -L "$LABEL"; set -e;
 efibootmgr --create --disk /dev/sda --part 1 --loader "$EFI_PATH" --label "$LABEL" --unicode
