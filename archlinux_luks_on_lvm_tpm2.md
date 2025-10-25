@@ -1,12 +1,9 @@
 # LUKS on LVM with TPM2 Secure Boot
 
-###
---allow-discards
-
 ### After arch-chroot
 `arch-chroot -S /mnt`
 
-### enable for ssd
+### enable trim for ssd
 `cryptsetup --allow-discards --persistent refresh root`  
 Check enabled `lsblk --discard`
 
