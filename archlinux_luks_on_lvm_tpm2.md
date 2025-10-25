@@ -1,7 +1,14 @@
-# LUKS on LVM with TPM2
+# LUKS on LVM with TPM2 Secure Boot
+
+###
+--allow-discards
 
 ### After arch-chroot
 `arch-chroot -S /mnt`
+
+### enable for ssd
+`cryptsetup --allow-discards --persistent refresh root`  
+Check enabled `lsblk --discard`
 
 ### Set in `/etc/mkinitcpio.conf`
 `HOOKS=(... systemd ... block lvm2 sd-encrypt filesystems ...)`
@@ -47,7 +54,7 @@ PCRPublicKey=/etc/systemd/tpm2-pcr-public-key.pem
 Run 
 `ukify genkey --config /etc/kernel/uki.conf`
 
-### Repeatedly run after pacman update or add to pacman's hook
+### run everytime after kernel update or add to pacman's hook
 ```
 set -e
 
