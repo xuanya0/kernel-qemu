@@ -4,8 +4,12 @@
 `arch-chroot -S /mnt`
 
 ### enable trim for ssd
-`cryptsetup --allow-discards --persistent refresh root`  
-Check enabled `lsblk --discard`
+```
+cryptsetup --allow-discards --persistent refresh root
+# Check enabled 
+lsblk --discard
+systemctl enable --now fstrim.timer
+```
 
 ### Set in `/etc/mkinitcpio.conf`
 `HOOKS=(... systemd ... block lvm2 sd-encrypt filesystems ...)`
