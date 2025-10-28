@@ -12,6 +12,7 @@ sed -i 's/procd_add_jail/: \0/g' ./etc/init.d/dnsmasq
 cd ..
 ```
 [Note: cannot have ujail (nested namespace) in the container](https://github.com/lxc/lxc-ci/blob/main/images/openwrt.yaml#L284C5-L284C57)
+(possibly related to !can_change_locked_flags() in path_mount())
 
 ### test the contained machine
 `systemd-nspawn -b -D openwrt --private-network --network-interface=eth2 --network-interface=eth3`
@@ -35,4 +36,18 @@ Check your pool path `machinectl show`
 mv openwrt /var/lib/machines/
 systemctl enable --now machines.target 
 machinectl enable openwrt
+```
+If boot start fails, try the following
+
+`systemctl edit systemd-nspawn@openwrt.service`
+```
+[Unit]
+StartLimitInterval=200
+StartLimitBurst=5
+
+[Service]
+ExecStartPre=sleep 10
+Restart=always
+RestartSec=30
+
 ```
