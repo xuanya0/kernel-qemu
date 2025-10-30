@@ -41,6 +41,7 @@ sbctl create-keys
 sbctl enroll-keys
 ```
 
+## ukify + sbctl
 ### Configure UKIFY
 add the following to `/etc/kernel/uki.conf`
 ```
@@ -71,3 +72,69 @@ efibootmgr --create --disk /dev/sda --part 1 --loader "$EFI_PATH" --label "$LABE
 ukify inspect "$SIGNED"
 sbctl verify
 ```
+
+
+
+## Simplified with ukify only
+
+Enable Secure Boot and clear SB keys. This puts the SB into Setup Mode.
+
+add the following to `/etc/kernel/uki.conf`
+```
+[UKI]
+Linux=/boot/vmlinuz-linux
+Initrd=/boot/initramfs-linux.img
+Microcode=/boot/intel-ucode.img
+Cmdline=rd.luks.name=763d787e-c071-4368-9baf-54641a67bafd=rootfs root=/dev/mapper/rootfs rw console=ttyS0,115200 intel_iommu=on
+Splash=/usr/share/systemd/bootctl/splash-arch.bmp
+#PCRPKey=
+#PCRBanks=
+SecureBootSigningTool=systemd-sbsign
+SecureBootPrivateKey=/etc/kernel/secure-boot-private-key.pem
+SecureBootCertificate=/etc/kernel/secure-boot-certificate.pem
+#SecureBootCertificateDir=
+#SecureBootCertificateName=
+#SecureBootCertificateValidity=
+#SigningEngine=
+SignKernel=true
+
+[PCRSignature:NAME]
+PCRPrivateKey=/etc/systemd/tpm2-pcr-private-key.pem
+PCRPublicKey=/etc/systemd/tpm2-pcr-public-key.pem
+#Phases=
+```
+
+## first launch
+```
+EFI_PATH="/EFI/Linux/ARCH_UKI.SIGNED.EFI"
+SIGNED="/boot/$EFI_PATH"
+LABEL='Arch UKI Signed'
+UKICONF="/etc/kernel/uki.conf"
+
+# generate secure boot and tpm2 public keys
+ukify genkey -c /etc/kernel/uki.conf
+# install systemd-boot with SB keys enrollment option
+bootctl install --secure-boot-auto-enroll yes --certificate /etc/kernel/secure-boot-certificate.pem --private-key /etc/kernel/secure-boot-private-key.pem `
+# generate UKI 
+ukify build --measure -c "$UKICONF" -o "$SIGNED"
+# add the UKI to EFI boot option
+set +e; efibootmgr -q -B -L "$LABEL"; set -e;
+efibootmgr --create --disk /dev/sda --part 1 --loader "$EFI_PATH" --label "$LABEL" --unicode
+```
+
+* Reboot system
+* boot into systemd-boot (likely named `Linux Boot Manager`)
+* choose `Enroll Secure Boot keys: auto`
+* It should automatically reboot into UKI and ask for LUKS password
+* Once logged in, run the following to seal LUKS to TPM
+  * `systemd-cryptenroll --wipe-slot tpm2 --tpm2-device auto --tpm2-pcrs="7" --tpm2-public-key-pcrs="11" /dev/mapper/arch-root`
+* Reboot, now the UKI should boot directly into login
+
+## subsequent updates
+
+1. If you do it manually, just run `ukify build --measure -c "$UKICONF" -o "$SIGNED"` after pacman update.
+2. Or follow [kernel-install](https://wiki.archlinux.org/title/Unified_kernel_image#kernel-install) to have the new UKI built and signed
+3. Untested automation with pacman [kernel-install](https://wiki.archlinux.org/title/Kernel-install#Automatically)
+
+
+
