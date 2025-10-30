@@ -132,9 +132,11 @@ efibootmgr --create --disk /dev/sda --part 1 --loader "$EFI_PATH" --label "$LABE
 
 ## subsequent updates
 
-1. If you do it manually, just run `ukify build --measure -c "$UKICONF" -o "$SIGNED"` after pacman update.
-2. Or follow [kernel-install](https://wiki.archlinux.org/title/Unified_kernel_image#kernel-install) to have the new UKI built and signed
-3. Untested automation with pacman [kernel-install](https://wiki.archlinux.org/title/Kernel-install#Automatically)
+* If you do it manually, just run `ukify build --measure -c "$UKICONF" -o "$SIGNED"` after pacman update.
+* To enable automatic update with pacman-mkinitcpio
+  * add [install.conf](https://wiki.archlinux.org/title/Unified_kernel_image#kernel-install).
+  * Add the following line `default_uki="<your $SIGNED path>"` to `/etc/mkinitcpio.d/linux.preset`
+  * Run `mkinitcpio -P` to verify that a new UKI is generated at `<your $SIGNED path>`
 
 
 
