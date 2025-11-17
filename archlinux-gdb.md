@@ -57,6 +57,8 @@ some helpers
 * G: `systemctl enable serial-getty@ttyS0.service`
 
 All in one
+
+Smallest kernel
 ```(shell)
 # .config saved from guest
 ./scripts/config --set-str LOCALVERSION '-gdb'
@@ -64,9 +66,21 @@ All in one
 ./scripts/config -e READABLE_ASM
 # needed_mods saved from guest
 make LSMOD=needed_mods localyesconfig
-make -j $(($(nproc)/2))
-make -j $(($(nproc)/2)) compile_commands.json
-make -j $(($(nproc)/2)) cscope
+nice make -j `nproc`
+nice make -j `nproc` compile_commands.json
+nice make -j `nproc` cscope
+```
+
+Same as upstream
+```(shell)
+# .config saved from guest
+./scripts/config --set-str LOCALVERSION '-gdb'
+./scripts/config -e GDB_SCRIPTS
+./scripts/config -e READABLE_ASM
+make mod2yesconfig
+nice make -j `nproc`
+nice make -j `nproc` compile_commands.json
+nice make -j `nproc` cscope
 ```
 
 ## Add a boot entry on guest
